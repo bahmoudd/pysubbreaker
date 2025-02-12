@@ -29,13 +29,13 @@ class NGramScore:
             score += self.ngrams.get(ngram, self.floor)
         return score
 
-fitness = NGramScore('quadgrams.txt')  # Load quadgram statistics
+fitness = NGramScore("quadgrams.txt")  # Load quadgram statistics
 
-with open("a.txt") as file:
-    ctext = file.readlines()[0]
+with open("input.txt") as file:
+    ctext = file.read()
 
 # Extract only the letters for processing
-letters_only = re.findall(r'[A-Z]', ctext.upper())
+letters_only = re.findall(r"[A-Z]", ctext.upper())
 
 maxkey = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 maxscore = float('-inf')
@@ -57,14 +57,14 @@ def restore_format(original, decoded):
             idx += 1
         else:
             result.append(char)
-    return ''.join(result)
+    return "".join(result)
 
 # Keep going until we are killed by the user
 i = 0
 while True:
     i += 1
     random.shuffle(parentkey)
-    deciphered = SimpleSub(parentkey).decipher(''.join(letters_only))
+    deciphered = SimpleSub(parentkey).decipher("".join(letters_only))
     parentscore = fitness.score(deciphered)
     count = 0
 
@@ -73,7 +73,7 @@ while True:
         child = parentkey[:]
         # Swap two characters in the child
         child[a], child[b] = child[b], child[a]
-        deciphered = SimpleSub(child).decipher(''.join(letters_only))
+        deciphered = SimpleSub(child).decipher("".join(letters_only))
         score = fitness.score(deciphered)
 
         # If the child was better, replace the parent with it
@@ -86,7 +86,7 @@ while True:
     # Keep track of best score seen so far
     if parentscore > maxscore:
         maxscore, maxkey = parentscore, parentkey[:]
-        print(f'\nBest score so far: {maxscore} on iteration {i}')
+        print(f"\nBest score so far: {maxscore} on iteration {i}")
         ss = SimpleSub(maxkey)
         decoded_text = ss.decipher(''.join(letters_only))
         formatted_output = restore_format(ctext, decoded_text)
