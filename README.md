@@ -3,9 +3,10 @@ Break any substitution/caesar cipher in a matter of seconds (source code based o
 
 ## How to use
 
-1) In your terminal, run `pip install -r requirements.txt`
-2) Place your ciphertext into `input.txt`
-3) Run `sub_cipher_breaker.py` and wait a few seconds to find the key and plaintext
+1) Clone the repository
+2) In your terminal, run `pip install -r requirements.txt`
+3) Place your ciphertext into `input.txt`
+4) Run `sub_cipher_breaker.py` and wait a few seconds to find the key and plaintext
 
 ## Notes
 
