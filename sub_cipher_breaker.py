@@ -14,8 +14,8 @@ class NGramScore:
         
         self.L = len(next(iter(self.ngrams)))
         self.N = sum(self.ngrams.values())
-        
-        # Calculate log probabilities
+
+        # Calculate scores
         for key in self.ngrams:
             self.ngrams[key] = log10(self.ngrams[key] / self.N)
         
@@ -41,10 +41,9 @@ maxkey = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 maxscore = float('-inf')
 parentscore, parentkey = maxscore, maxkey[:]
 
-print("Substitution Cipher solver, you may have to wait several iterations")
-print("for the correct result. Press Ctrl+C to exit program.")
+print("Substitution Cipher solver, you may have to wait several iterations for the correct result.")
+print("Press Ctrl+C to exit program.")
 
-# Function to apply deciphered text back into original format
 def restore_format(original, decoded):
     result = []
     idx = 0
@@ -59,36 +58,42 @@ def restore_format(original, decoded):
             result.append(char)
     return "".join(result)
 
-# Keep going until we are killed by the user
-i = 0
-while True:
+import math
+
+i = 0 
+T = 10
+cooling_rate = 0.00005 # Lower = slower cooling, more exploration. 
+
+parentkey = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+random.shuffle(parentkey)
+parentscore = fitness.score(SimpleSub(parentkey).decipher(''.join(letters_only)))
+
+while T > 0.1:
     i += 1
-    random.shuffle(parentkey)
-    deciphered = SimpleSub(parentkey).decipher("".join(letters_only))
-    parentscore = fitness.score(deciphered)
-    count = 0
+    # Swap two random letters to create a new child key
+    a, b = random.sample(range(26), 2)
+    child = parentkey[:]
+    child[a], child[b] = child[b], child[a]
 
-    while count < 1000:
-        a, b = random.sample(range(26), 2)
-        child = parentkey[:]
-        # Swap two characters in the child
-        child[a], child[b] = child[b], child[a]
-        deciphered = SimpleSub(child).decipher("".join(letters_only))
-        score = fitness.score(deciphered)
+    # Score the child key
+    deciphered = SimpleSub(child).decipher("".join(letters_only))
+    score = fitness.score(deciphered)
 
-        # If the child was better, replace the parent with it
-        if score > parentscore:
-            parentscore = score
-            parentkey = child[:]
-            count = 0
-        count += 1
+    # Accept if better or with some probability
+    delta = score - parentscore
+    if delta > 0 or math.exp(delta / T) > random.random():
+        parentkey = child
+        parentscore = score
 
-    # Keep track of best score seen so far
-    if parentscore > maxscore:
-        maxscore, maxkey = parentscore, parentkey[:]
-        print(f"\nBest score so far: {maxscore} on iteration {i}")
-        ss = SimpleSub(maxkey)
-        decoded_text = ss.decipher(''.join(letters_only))
-        formatted_output = restore_format(ctext, decoded_text)
-        print(f'    Best key: {"".join(maxkey)}')
-        print(f'    Plaintext: {formatted_output}')
+
+        if score > maxscore:
+            maxscore = score
+            maxkey = child[:]
+            decoded_text = SimpleSub(maxkey).decipher("".join(letters_only))
+            formatted_output = restore_format(ctext, decoded_text)
+            print(f"\nNew best score: {maxscore} at iteration {i}")
+            print(f"    Key: {''.join(maxkey)}")
+            print(f"    Text: {formatted_output}")
+
+    
+    T -= cooling_rate
